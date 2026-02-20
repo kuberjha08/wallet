@@ -75,6 +75,24 @@ public class User {
     @Column(name = "qr_code_data", length = 5000)
     private String qrCodeData;
 
+    @Column(name = "last_active")
+    private LocalDateTime lastActive;
+
+    @Column(name = "risk_level")
+    private String riskLevel = "LOW";
+
+    @Column(name = "date_of_birth")
+    private String dateOfBirth;
+
+    @Column(name = "nationality")
+    private String nationality;
+
+    @Column(name = "address")
+    private String address;
+
+    @Column(name = "profile_picture")
+    private String profilePicture;
+
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) {
@@ -95,5 +113,13 @@ public class User {
         if (step == null) {
             step = "SIGNUP";
         }
+        if (riskLevel == null) {
+            riskLevel = "LOW";
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        lastActive = LocalDateTime.now();
     }
 }

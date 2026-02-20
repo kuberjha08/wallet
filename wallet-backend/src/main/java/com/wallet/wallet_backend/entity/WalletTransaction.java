@@ -17,18 +17,25 @@ public class WalletTransaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "user_id", nullable = false)
     private Long userId;
 
     @Column(nullable = false)
     private Double amount;
+
+    @Column(name = "balance_after")
+    private Double balanceAfter;
 
     @Column(nullable = false)
     private String type;
 
     private String reference;
 
+    @Column(name = "status")
+    private String status = "COMPLETED";  // ✅ DEFAULT VALUE SET KARO
+
     @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
 
     @Builder
     public WalletTransaction(Long userId, Double amount, String type, String reference) {
@@ -36,6 +43,7 @@ public class WalletTransaction {
         this.amount = amount;
         this.type = type;
         this.reference = reference;
+        this.status = "COMPLETED";  // ✅ YAHAN BHI SET KARO
         this.createdAt = LocalDateTime.now();
     }
 
@@ -43,6 +51,9 @@ public class WalletTransaction {
     protected void onCreate() {
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
+        }
+        if (status == null) {  // ✅ NULL CHECK
+            status = "COMPLETED";
         }
     }
 }

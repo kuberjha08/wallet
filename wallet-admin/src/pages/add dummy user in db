@@ -1,0 +1,518 @@
+-- ============================================
+-- COMPLETE DATABASE RESET AND POPULATION
+-- ============================================
+
+-- 1. First, delete all existing data (order matters due to foreign keys)
+DELETE FROM wallet_transactions;
+DELETE FROM kyc_documents;
+DELETE FROM users;
+DBCC CHECKIDENT ('users', RESEED, 0);
+DBCC CHECKIDENT ('wallet_transactions', RESEED, 0);
+DBCC CHECKIDENT ('kyc_documents', RESEED, 0);
+GO
+
+-- ============================================
+-- 2. CREATE ADMIN USER (ID: 1)
+-- ============================================
+INSERT INTO users (
+    mobile,
+    name,
+    email,
+    mpin_hash,
+    wallet_balance,
+    is_wallet_frozen,
+    kyc_status,
+    created_at,
+    role,
+    step,
+    risk_level,
+    date_of_birth,
+    nationality,
+    address,
+    profile_picture,
+    last_active,
+    upi_id,
+    permanent_token,
+    permanent_token_expiry,
+    version
+)
+VALUES (
+    '8708574843',  -- Admin mobile
+    'Super Admin',
+    'admin@wallet.com',
+    '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', -- MPIN: 1234
+    100000.00,  -- Admin wallet balance
+    0,  -- Not frozen
+    'APPROVED',
+    GETDATE(),
+    'ADMIN',
+    'DASHBOARD',
+    'LOW',
+    '1990-01-01',
+    'Indian',
+    'Admin Office, Mumbai',
+    'https://randomuser.me/api/portraits/men/0.jpg',
+    GETDATE(),
+    'admin@okhdfcbank',
+    'ADMIN_PERM_' + CONVERT(VARCHAR, CAST(GETDATE() AS BIGINT)),
+    DATEADD(day, 365, GETDATE()),
+    1
+);
+GO
+
+-- ============================================
+-- 3. CREATE 50 REGULAR USERS
+-- ============================================
+
+-- User credentials: All users have MPIN = 1234 (same hash)
+-- Hash: $2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q
+
+INSERT INTO users (
+    mobile,
+    name,
+    email,
+    mpin_hash,
+    wallet_balance,
+    is_wallet_frozen,
+    kyc_status,
+    created_at,
+    role,
+    step,
+    risk_level,
+    date_of_birth,
+    nationality,
+    address,
+    profile_picture,
+    last_active,
+    upi_id,
+    permanent_token,
+    permanent_token_expiry,
+    version
+)
+SELECT * FROM (
+    VALUES
+    -- Users 2-11: Active users with good balances
+    ('9876540001', 'Aarav Sharma', 'aarav.sharma@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 12500.50, 0, 'APPROVED', DATEADD(day, -30, GETDATE()), 'USER', 'DASHBOARD', 'LOW', '1990-05-15', 'Indian', '42, MG Road, Bangalore - 560001', 'https://randomuser.me/api/portraits/men/1.jpg', DATEADD(hour, -2, GETDATE()), 'aarav@okhdfcbank', 'PERM_AARAV_' + CONVERT(VARCHAR, CAST(DATEADD(day, -30, GETDATE()) AS BIGINT)), DATEADD(day, 335, DATEADD(day, -30, GETDATE())), 1),
+    ('9876540002', 'Ananya Patel', 'ananya.p@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 8750.75, 0, 'APPROVED', DATEADD(day, -28, GETDATE()), 'USER', 'DASHBOARD', 'LOW', '1992-08-22', 'Indian', '15, Park Street, Kolkata - 700016', 'https://randomuser.me/api/portraits/women/2.jpg', DATEADD(hour, -5, GETDATE()), 'ananya@okaxis', 'PERM_ANANYA_' + CONVERT(VARCHAR, CAST(DATEADD(day, -28, GETDATE()) AS BIGINT)), DATEADD(day, 337, DATEADD(day, -28, GETDATE())), 1),
+    ('9876540003', 'Vihaan Kumar', 'vihaan.k@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 34200.00, 0, 'APPROVED', DATEADD(day, -45, GETDATE()), 'USER', 'DASHBOARD', 'MEDIUM', '1988-11-03', 'Indian', '7, Jubilee Hills, Hyderabad - 500033', 'https://randomuser.me/api/portraits/men/3.jpg', DATEADD(hour, -1, GETDATE()), 'vihaan@ybl', 'PERM_VIHAAN_' + CONVERT(VARCHAR, CAST(DATEADD(day, -45, GETDATE()) AS BIGINT)), DATEADD(day, 320, DATEADD(day, -45, GETDATE())), 1),
+    ('9876540004', 'Ishita Singh', 'ishita.singh@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 5600.25, 0, 'PENDING', DATEADD(day, -10, GETDATE()), 'USER', 'KYC_PENDING', 'LOW', '1995-02-18', 'Indian', '23, Civil Lines, Delhi - 110054', 'https://randomuser.me/api/portraits/women/4.jpg', DATEADD(hour, -12, GETDATE()), 'ishita@okicici', 'PERM_ISHITA_' + CONVERT(VARCHAR, CAST(DATEADD(day, -10, GETDATE()) AS BIGINT)), DATEADD(day, 355, DATEADD(day, -10, GETDATE())), 1),
+    ('9876540005', 'Advik Gupta', 'advik.g@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 18900.80, 1, 'REJECTED', DATEADD(day, -60, GETDATE()), 'USER', 'DASHBOARD', 'HIGH', '1985-07-30', 'Indian', '56, Boat Club Road, Pune - 411001', 'https://randomuser.me/api/portraits/men/5.jpg', DATEADD(hour, -48, GETDATE()), 'advik@okhdfcbank', 'PERM_ADVIK_' + CONVERT(VARCHAR, CAST(DATEADD(day, -60, GETDATE()) AS BIGINT)), DATEADD(day, 305, DATEADD(day, -60, GETDATE())), 1),
+    ('9876540006', 'Sanya Malhotra', 'sanya.m@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 22300.00, 0, 'APPROVED', DATEADD(day, -15, GETDATE()), 'USER', 'DASHBOARD', 'LOW', '1993-09-12', 'Indian', '89, Marine Drive, Mumbai - 400020', 'https://randomuser.me/api/portraits/women/6.jpg', DATEADD(hour, -3, GETDATE()), 'sanya@okaxis', 'PERM_SANYA_' + CONVERT(VARCHAR, CAST(DATEADD(day, -15, GETDATE()) AS BIGINT)), DATEADD(day, 350, DATEADD(day, -15, GETDATE())), 1),
+    ('9876540007', 'Kabir Reddy', 'kabir.r@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 4450.50, 0, 'APPROVED', DATEADD(day, -20, GETDATE()), 'USER', 'DASHBOARD', 'MEDIUM', '1991-04-25', 'Indian', '12, Banjara Hills, Chennai - 600028', 'https://randomuser.me/api/portraits/men/7.jpg', DATEADD(hour, -6, GETDATE()), 'kabir@ybl', 'PERM_KABIR_' + CONVERT(VARCHAR, CAST(DATEADD(day, -20, GETDATE()) AS BIGINT)), DATEADD(day, 345, DATEADD(day, -20, GETDATE())), 1),
+    ('9876540008', 'Myra Choudhury', 'myra.c@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 67800.25, 0, 'APPROVED', DATEADD(day, -35, GETDATE()), 'USER', 'DASHBOARD', 'LOW', '1989-12-08', 'Indian', '34, Gomti Nagar, Lucknow - 226010', 'https://randomuser.me/api/portraits/women/8.jpg', DATEADD(hour, -1, GETDATE()), 'myra@okicici', 'PERM_MYRA_' + CONVERT(VARCHAR, CAST(DATEADD(day, -35, GETDATE()) AS BIGINT)), DATEADD(day, 330, DATEADD(day, -35, GETDATE())), 1),
+    ('9876540009', 'Shaurya Mehta', 'shaurya.m@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 32400.90, 0, 'PENDING', DATEADD(day, -8, GETDATE()), 'USER', 'KYC_PENDING', 'MEDIUM', '1994-06-17', 'Indian', '78, Law Garden, Ahmedabad - 380006', 'https://randomuser.me/api/portraits/men/9.jpg', DATEADD(hour, -24, GETDATE()), 'shaurya@okhdfcbank', 'PERM_SHAURYA_' + CONVERT(VARCHAR, CAST(DATEADD(day, -8, GETDATE()) AS BIGINT)), DATEADD(day, 357, DATEADD(day, -8, GETDATE())), 1),
+    ('9876540010', 'Aadhya Krishnan', 'aadhya.k@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 15300.00, 0, 'APPROVED', DATEADD(day, -25, GETDATE()), 'USER', 'DASHBOARD', 'LOW', '1990-01-29', 'Indian', '56, Race Course, Coimbatore - 641018', 'https://randomuser.me/api/portraits/women/10.jpg', DATEADD(hour, -4, GETDATE()), 'aadhya@okaxis', 'PERM_AADHYA_' + CONVERT(VARCHAR, CAST(DATEADD(day, -25, GETDATE()) AS BIGINT)), DATEADD(day, 340, DATEADD(day, -25, GETDATE())), 1),
+
+    -- Users 11-20: Mix of frozen and different KYC statuses
+    ('9876540011', 'Reyansh Nair', 'reyansh.n@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 8900.00, 1, 'APPROVED', DATEADD(day, -40, GETDATE()), 'USER', 'DASHBOARD', 'HIGH', '1987-03-14', 'Indian', '23, Panampilly Nagar, Kochi - 682036', 'https://randomuser.me/api/portraits/men/11.jpg', DATEADD(hour, -72, GETDATE()), 'reyansh@ybl', 'PERM_REYANSH_' + CONVERT(VARCHAR, CAST(DATEADD(day, -40, GETDATE()) AS BIGINT)), DATEADD(day, 325, DATEADD(day, -40, GETDATE())), 1),
+    ('9876540012', 'Diya Joshi', 'diya.j@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 23400.50, 0, 'APPROVED', DATEADD(day, -18, GETDATE()), 'USER', 'DASHBOARD', 'LOW', '1992-10-05', 'Indian', '45, Mall Road, Shimla - 171001', 'https://randomuser.me/api/portraits/women/12.jpg', DATEADD(hour, -2, GETDATE()), 'diya@okicici', 'PERM_DIYA_' + CONVERT(VARCHAR, CAST(DATEADD(day, -18, GETDATE()) AS BIGINT)), DATEADD(day, 347, DATEADD(day, -18, GETDATE())), 1),
+    ('9876540013', 'Krishna Iyer', 'krishna.i@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 5670.75, 0, 'PENDING', DATEADD(day, -12, GETDATE()), 'USER', 'KYC_PENDING', 'MEDIUM', '1995-07-22', 'Indian', '67, Thyagaraya Road, Madurai - 625001', 'https://randomuser.me/api/portraits/men/13.jpg', DATEADD(hour, -8, GETDATE()), 'krishna@okhdfcbank', 'PERM_KRISHNA_' + CONVERT(VARCHAR, CAST(DATEADD(day, -12, GETDATE()) AS BIGINT)), DATEADD(day, 353, DATEADD(day, -12, GETDATE())), 1),
+    ('9876540014', 'Aarna Desai', 'aarna.d@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 32100.00, 0, 'APPROVED', DATEADD(day, -32, GETDATE()), 'USER', 'DASHBOARD', 'LOW', '1988-09-09', 'Indian', '12, FC Road, Nagpur - 440010', 'https://randomuser.me/api/portraits/women/14.jpg', DATEADD(hour, -5, GETDATE()), 'aarna@okaxis', 'PERM_AARNA_' + CONVERT(VARCHAR, CAST(DATEADD(day, -32, GETDATE()) AS BIGINT)), DATEADD(day, 333, DATEADD(day, -32, GETDATE())), 1),
+    ('9876540015', 'Dhruv Saxena', 'dhruv.s@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 8900.25, 1, 'APPROVED', DATEADD(day, -55, GETDATE()), 'USER', 'DASHBOARD', 'HIGH', '1986-12-18', 'Indian', '34, Ashok Nagar, Bhopal - 462023', 'https://randomuser.me/api/portraits/men/15.jpg', DATEADD(hour, -96, GETDATE()), 'dhruv@ybl', 'PERM_DHRUV_' + CONVERT(VARCHAR, CAST(DATEADD(day, -55, GETDATE()) AS BIGINT)), DATEADD(day, 310, DATEADD(day, -55, GETDATE())), 1),
+    ('9876540016', 'Anvi Kulkarni', 'anvi.k@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 44500.00, 0, 'APPROVED', DATEADD(day, -22, GETDATE()), 'USER', 'DASHBOARD', 'LOW', '1991-02-27', 'Indian', '56, Kalyani Nagar, Indore - 452010', 'https://randomuser.me/api/portraits/women/16.jpg', DATEADD(hour, -1, GETDATE()), 'anvi@okicici', 'PERM_ANVI_' + CONVERT(VARCHAR, CAST(DATEADD(day, -22, GETDATE()) AS BIGINT)), DATEADD(day, 343, DATEADD(day, -22, GETDATE())), 1),
+    ('9876540017', 'Vedant Mishra', 'vedant.m@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 7890.50, 0, 'REJECTED', DATEADD(day, -70, GETDATE()), 'USER', 'DASHBOARD', 'MEDIUM', '1984-06-30', 'Indian', '23, Rajendra Nagar, Patna - 800016', 'https://randomuser.me/api/portraits/men/17.jpg', DATEADD(hour, -120, GETDATE()), 'vedant@okhdfcbank', 'PERM_VEDANT_' + CONVERT(VARCHAR, CAST(DATEADD(day, -70, GETDATE()) AS BIGINT)), DATEADD(day, 295, DATEADD(day, -70, GETDATE())), 1),
+    ('9876540018', 'Sia Menon', 'sia.m@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 23450.75, 0, 'APPROVED', DATEADD(day, -16, GETDATE()), 'USER', 'DASHBOARD', 'LOW', '1993-11-11', 'Indian', '78, Vyttila, Thiruvananthapuram - 695001', 'https://randomuser.me/api/portraits/women/18.jpg', DATEADD(hour, -3, GETDATE()), 'sia@okaxis', 'PERM_SIA_' + CONVERT(VARCHAR, CAST(DATEADD(day, -16, GETDATE()) AS BIGINT)), DATEADD(day, 349, DATEADD(day, -16, GETDATE())), 1),
+    ('9876540019', 'Rudra Shetty', 'rudra.s@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 65400.00, 0, 'PENDING', DATEADD(day, -9, GETDATE()), 'USER', 'KYC_PENDING', 'MEDIUM', '1994-04-19', 'Indian', '45, Kadri, Mangalore - 575003', 'https://randomuser.me/api/portraits/men/19.jpg', DATEADD(hour, -7, GETDATE()), 'rudra@ybl', 'PERM_RUDRA_' + CONVERT(VARCHAR, CAST(DATEADD(day, -9, GETDATE()) AS BIGINT)), DATEADD(day, 356, DATEADD(day, -9, GETDATE())), 1),
+    ('9876540020', 'Prisha Bhat', 'prisha.b@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 9870.25, 0, 'APPROVED', DATEADD(day, -27, GETDATE()), 'USER', 'DASHBOARD', 'LOW', '1990-08-07', 'Indian', '12, Camp, Belgaum - 590001', 'https://randomuser.me/api/portraits/women/20.jpg', DATEADD(hour, -4, GETDATE()), 'prisha@okicici', 'PERM_PRISHA_' + CONVERT(VARCHAR, CAST(DATEADD(day, -27, GETDATE()) AS BIGINT)), DATEADD(day, 338, DATEADD(day, -27, GETDATE())), 1),
+
+    -- Users 21-30: Various risk levels
+    ('9876540021', 'Yash Thakur', 'yash.t@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 11200.00, 0, 'APPROVED', DATEADD(day, -33, GETDATE()), 'USER', 'DASHBOARD', 'MEDIUM', '1989-01-15', 'Indian', '23, Civil Lines, Jaipur - 302006', 'https://randomuser.me/api/portraits/men/21.jpg', DATEADD(hour, -6, GETDATE()), 'yash@okhdfcbank', 'PERM_YASH_' + CONVERT(VARCHAR, CAST(DATEADD(day, -33, GETDATE()) AS BIGINT)), DATEADD(day, 332, DATEADD(day, -33, GETDATE())), 1),
+    ('9876540022', 'Kiara Khanna', 'kiara.k@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 45600.50, 0, 'APPROVED', DATEADD(day, -19, GETDATE()), 'USER', 'DASHBOARD', 'LOW', '1992-05-23', 'Indian', '56, Mall Road, Mussoorie - 248179', 'https://randomuser.me/api/portraits/women/22.jpg', DATEADD(hour, -2, GETDATE()), 'kiara@okaxis', 'PERM_KIARA_' + CONVERT(VARCHAR, CAST(DATEADD(day, -19, GETDATE()) AS BIGINT)), DATEADD(day, 346, DATEADD(day, -19, GETDATE())), 1),
+    ('9876540023', 'Arjun Sethi', 'arjun.s@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 7890.00, 1, 'APPROVED', DATEADD(day, -48, GETDATE()), 'USER', 'DASHBOARD', 'HIGH', '1987-09-09', 'Indian', '78, Lake Town, Bhubaneswar - 751001', 'https://randomuser.me/api/portraits/men/23.jpg', DATEADD(hour, -84, GETDATE()), 'arjun@ybl', 'PERM_ARJUN_' + CONVERT(VARCHAR, CAST(DATEADD(day, -48, GETDATE()) AS BIGINT)), DATEADD(day, 317, DATEADD(day, -48, GETDATE())), 1),
+    ('9876540024', 'Navya Gowda', 'navya.g@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 23400.25, 0, 'PENDING', DATEADD(day, -11, GETDATE()), 'USER', 'KYC_PENDING', 'MEDIUM', '1995-12-02', 'Indian', '34, Jayanagar, Mysore - 570001', 'https://randomuser.me/api/portraits/women/24.jpg', DATEADD(hour, -9, GETDATE()), 'navya@okicici', 'PERM_NAVYA_' + CONVERT(VARCHAR, CAST(DATEADD(day, -11, GETDATE()) AS BIGINT)), DATEADD(day, 354, DATEADD(day, -11, GETDATE())), 1),
+    ('9876540025', 'Ishaan Bajaj', 'ishaan.b@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 54300.00, 0, 'APPROVED', DATEADD(day, -29, GETDATE()), 'USER', 'DASHBOARD', 'LOW', '1991-03-18', 'Indian', '45, Civil Lines, Jalandhar - 144001', 'https://randomuser.me/api/portraits/men/25.jpg', DATEADD(hour, -5, GETDATE()), 'ishaan@okhdfcbank', 'PERM_ISHAAN_' + CONVERT(VARCHAR, CAST(DATEADD(day, -29, GETDATE()) AS BIGINT)), DATEADD(day, 336, DATEADD(day, -29, GETDATE())), 1),
+    ('9876540026', 'Anaya Raj', 'anaya.r@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 9870.50, 0, 'APPROVED', DATEADD(day, -23, GETDATE()), 'USER', 'DASHBOARD', 'LOW', '1990-07-11', 'Indian', '67, MG Road, Ranchi - 834001', 'https://randomuser.me/api/portraits/women/26.jpg', DATEADD(hour, -3, GETDATE()), 'anaya@okaxis', 'PERM_ANAYA_' + CONVERT(VARCHAR, CAST(DATEADD(day, -23, GETDATE()) AS BIGINT)), DATEADD(day, 342, DATEADD(day, -23, GETDATE())), 1),
+    ('9876540027', 'Vivaan Chopra', 'vivaan.c@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 65400.75, 1, 'APPROVED', DATEADD(day, -52, GETDATE()), 'USER', 'DASHBOARD', 'HIGH', '1988-10-27', 'Indian', '12, Civil Lines, Guwahati - 781001', 'https://randomuser.me/api/portraits/men/27.jpg', DATEADD(hour, -108, GETDATE()), 'vivaan@ybl', 'PERM_VIVAAN_' + CONVERT(VARCHAR, CAST(DATEADD(day, -52, GETDATE()) AS BIGINT)), DATEADD(day, 313, DATEADD(day, -52, GETDATE())), 1),
+    ('9876540028', 'Sara Khan', 'sara.k@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 32100.00, 0, 'REJECTED', DATEADD(day, -65, GETDATE()), 'USER', 'DASHBOARD', 'MEDIUM', '1985-04-05', 'Indian', '34, Park Street, Srinagar - 190001', 'https://randomuser.me/api/portraits/women/28.jpg', DATEADD(hour, -132, GETDATE()), 'sara@okicici', 'PERM_SARA_' + CONVERT(VARCHAR, CAST(DATEADD(day, -65, GETDATE()) AS BIGINT)), DATEADD(day, 300, DATEADD(day, -65, GETDATE())), 1),
+    ('9876540029', 'Rohan Mehra', 'rohan.m@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 23450.25, 0, 'APPROVED', DATEADD(day, -17, GETDATE()), 'USER', 'DASHBOARD', 'LOW', '1993-08-14', 'Indian', '56, Civil Lines, Dehradun - 248001', 'https://randomuser.me/api/portraits/men/29.jpg', DATEADD(hour, -4, GETDATE()), 'rohan@okhdfcbank', 'PERM_ROHAN_' + CONVERT(VARCHAR, CAST(DATEADD(day, -17, GETDATE()) AS BIGINT)), DATEADD(day, 348, DATEADD(day, -17, GETDATE())), 1),
+    ('9876540030', 'Ayaan Khan', 'ayaan.k@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 8760.50, 0, 'PENDING', DATEADD(day, -13, GETDATE()), 'USER', 'KYC_PENDING', 'LOW', '1994-11-30', 'Indian', '78, Mall Road, Shimla - 171001', 'https://randomuser.me/api/portraits/men/30.jpg', DATEADD(hour, -8, GETDATE()), 'ayaan@okaxis', 'PERM_AYAAN_' + CONVERT(VARCHAR, CAST(DATEADD(day, -13, GETDATE()) AS BIGINT)), DATEADD(day, 352, DATEADD(day, -13, GETDATE())), 1),
+
+    -- Users 31-40: More variations
+    ('9876540031', 'Ira Malhotra', 'ira.m@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 44500.00, 0, 'APPROVED', DATEADD(day, -31, GETDATE()), 'USER', 'DASHBOARD', 'LOW', '1989-06-22', 'Indian', '23, MG Road, Agra - 282001', 'https://randomuser.me/api/portraits/women/31.jpg', DATEADD(hour, -2, GETDATE()), 'ira@ybl', 'PERM_IRA_' + CONVERT(VARCHAR, CAST(DATEADD(day, -31, GETDATE()) AS BIGINT)), DATEADD(day, 334, DATEADD(day, -31, GETDATE())), 1),
+    ('9876540032', 'Kabir Singh', 'kabir.s@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 78900.00, 1, 'APPROVED', DATEADD(day, -44, GETDATE()), 'USER', 'DASHBOARD', 'HIGH', '1987-12-09', 'Indian', '45, Civil Lines, Varanasi - 221001', 'https://randomuser.me/api/portraits/men/32.jpg', DATEADD(hour, -72, GETDATE()), 'kabir@okicici', 'PERM_KABIR2_' + CONVERT(VARCHAR, CAST(DATEADD(day, -44, GETDATE()) AS BIGINT)), DATEADD(day, 321, DATEADD(day, -44, GETDATE())), 1),
+    ('9876540033', 'Zara Sheikh', 'zara.s@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 23400.75, 0, 'APPROVED', DATEADD(day, -26, GETDATE()), 'USER', 'DASHBOARD', 'MEDIUM', '1990-02-16', 'Indian', '67, Lake Road, Udaipur - 313001', 'https://randomuser.me/api/portraits/women/33.jpg', DATEADD(hour, -5, GETDATE()), 'zara@okhdfcbank', 'PERM_ZARA_' + CONVERT(VARCHAR, CAST(DATEADD(day, -26, GETDATE()) AS BIGINT)), DATEADD(day, 339, DATEADD(day, -26, GETDATE())), 1),
+    ('9876540034', 'Reyansh Kapoor', 'reyansh.k@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 8760.25, 0, 'PENDING', DATEADD(day, -14, GETDATE()), 'USER', 'KYC_PENDING', 'LOW', '1995-09-03', 'Indian', '12, Civil Lines, Amritsar - 143001', 'https://randomuser.me/api/portraits/men/34.jpg', DATEADD(hour, -10, GETDATE()), 'reyansh@okaxis', 'PERM_REYANSH2_' + CONVERT(VARCHAR, CAST(DATEADD(day, -14, GETDATE()) AS BIGINT)), DATEADD(day, 351, DATEADD(day, -14, GETDATE())), 1),
+    ('9876540035', 'Anika Verma', 'anika.v@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 54300.00, 0, 'APPROVED', DATEADD(day, -21, GETDATE()), 'USER', 'DASHBOARD', 'LOW', '1992-04-28', 'Indian', '34, Mall Road, Nainital - 263001', 'https://randomuser.me/api/portraits/women/35.jpg', DATEADD(hour, -3, GETDATE()), 'anika@ybl', 'PERM_ANIKA_' + CONVERT(VARCHAR, CAST(DATEADD(day, -21, GETDATE()) AS BIGINT)), DATEADD(day, 344, DATEADD(day, -21, GETDATE())), 1),
+    ('9876540036', 'Shaurya Bhatia', 'shaurya.b@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 32100.50, 0, 'APPROVED', DATEADD(day, -37, GETDATE()), 'USER', 'DASHBOARD', 'MEDIUM', '1988-07-19', 'Indian', '56, MG Road, Aurangabad - 431001', 'https://randomuser.me/api/portraits/men/36.jpg', DATEADD(hour, -6, GETDATE()), 'shaurya@okicici', 'PERM_SHAURYA2_' + CONVERT(VARCHAR, CAST(DATEADD(day, -37, GETDATE()) AS BIGINT)), DATEADD(day, 328, DATEADD(day, -37, GETDATE())), 1),
+    ('9876540037', 'Aadhya Sharma', 'aadhya.s@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 9870.00, 1, 'APPROVED', DATEADD(day, -58, GETDATE()), 'USER', 'DASHBOARD', 'HIGH', '1986-01-08', 'Indian', '78, Civil Lines, Allahabad - 211001', 'https://randomuser.me/api/portraits/women/37.jpg', DATEADD(hour, -96, GETDATE()), 'aadhya@okhdfcbank', 'PERM_AADHYA2_' + CONVERT(VARCHAR, CAST(DATEADD(day, -58, GETDATE()) AS BIGINT)), DATEADD(day, 307, DATEADD(day, -58, GETDATE())), 1),
+    ('9876540038', 'Vihaan Oberoi', 'vihaan.o@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 65400.25, 0, 'REJECTED', DATEADD(day, -62, GETDATE()), 'USER', 'DASHBOARD', 'MEDIUM', '1985-10-12', 'Indian', '23, Park Road, Jabalpur - 482001', 'https://randomuser.me/api/portraits/men/38.jpg', DATEADD(hour, -120, GETDATE()), 'vihaan@okaxis', 'PERM_VIHAAN2_' + CONVERT(VARCHAR, CAST(DATEADD(day, -62, GETDATE()) AS BIGINT)), DATEADD(day, 303, DATEADD(day, -62, GETDATE())), 1),
+    ('9876540039', 'Sia Dutta', 'sia.d@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 23450.00, 0, 'APPROVED', DATEADD(day, -24, GETDATE()), 'USER', 'DASHBOARD', 'LOW', '1991-05-05', 'Indian', '45, Lake View, Bikaner - 334001', 'https://randomuser.me/api/portraits/women/39.jpg', DATEADD(hour, -4, GETDATE()), 'sia@ybl', 'PERM_SIA2_' + CONVERT(VARCHAR, CAST(DATEADD(day, -24, GETDATE()) AS BIGINT)), DATEADD(day, 341, DATEADD(day, -24, GETDATE())), 1),
+    ('9876540040', 'Advik Jain', 'advik.j@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 87600.00, 0, 'PENDING', DATEADD(day, -10, GETDATE()), 'USER', 'KYC_PENDING', 'MEDIUM', '1994-03-21', 'Indian', '67, Civil Lines, Jodhpur - 342001', 'https://randomuser.me/api/portraits/men/40.jpg', DATEADD(hour, -7, GETDATE()), 'advik@okicici', 'PERM_ADVIK2_' + CONVERT(VARCHAR, CAST(DATEADD(day, -10, GETDATE()) AS BIGINT)), DATEADD(day, 355, DATEADD(day, -10, GETDATE())), 1),
+
+    -- Users 41-50: Final batch
+    ('9876540041', 'Ananya Roy', 'ananya.r2@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 34500.50, 0, 'APPROVED', DATEADD(day, -28, GETDATE()), 'USER', 'DASHBOARD', 'LOW', '1992-11-17', 'Indian', '12, MG Road, Siliguri - 734001', 'https://randomuser.me/api/portraits/women/41.jpg', DATEADD(hour, -2, GETDATE()), 'ananya2@okhdfcbank', 'PERM_ANANYA2_' + CONVERT(VARCHAR, CAST(DATEADD(day, -28, GETDATE()) AS BIGINT)), DATEADD(day, 337, DATEADD(day, -28, GETDATE())), 1),
+    ('9876540042', 'Kabir Das', 'kabir.d@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 56700.00, 1, 'APPROVED', DATEADD(day, -47, GETDATE()), 'USER', 'DASHBOARD', 'HIGH', '1987-08-29', 'Indian', '34, Civil Lines, Dhanbad - 826001', 'https://randomuser.me/api/portraits/men/42.jpg', DATEADD(hour, -84, GETDATE()), 'kabir.d@okaxis', 'PERM_KABIR3_' + CONVERT(VARCHAR, CAST(DATEADD(day, -47, GETDATE()) AS BIGINT)), DATEADD(day, 318, DATEADD(day, -47, GETDATE())), 1),
+    ('9876540043', 'Myra Chatterjee', 'myra.c2@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 23400.00, 0, 'APPROVED', DATEADD(day, -19, GETDATE()), 'USER', 'DASHBOARD', 'LOW', '1993-02-14', 'Indian', '56, Park Street, Asansol - 713301', 'https://randomuser.me/api/portraits/women/43.jpg', DATEADD(hour, -5, GETDATE()), 'myra.c2@ybl', 'PERM_MYRA2_' + CONVERT(VARCHAR, CAST(DATEADD(day, -19, GETDATE()) AS BIGINT)), DATEADD(day, 346, DATEADD(day, -19, GETDATE())), 1),
+    ('9876540044', 'Dhruv Pillai', 'dhruv.p@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 8760.75, 0, 'PENDING', DATEADD(day, -15, GETDATE()), 'USER', 'KYC_PENDING', 'MEDIUM', '1995-06-06', 'Indian', '78, Mall Road, Rishikesh - 249201', 'https://randomuser.me/api/portraits/men/44.jpg', DATEADD(hour, -9, GETDATE()), 'dhruv.p@okicici', 'PERM_DHRUV2_' + CONVERT(VARCHAR, CAST(DATEADD(day, -15, GETDATE()) AS BIGINT)), DATEADD(day, 350, DATEADD(day, -15, GETDATE())), 1),
+    ('9876540045', 'Ishita Gupta', 'ishita.g@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 43200.25, 0, 'APPROVED', DATEADD(day, -32, GETDATE()), 'USER', 'DASHBOARD', 'LOW', '1990-09-24', 'Indian', '23, Civil Lines, Haridwar - 249401', 'https://randomuser.me/api/portraits/women/45.jpg', DATEADD(hour, -3, GETDATE()), 'ishita.g@okhdfcbank', 'PERM_ISHITA2_' + CONVERT(VARCHAR, CAST(DATEADD(day, -32, GETDATE()) AS BIGINT)), DATEADD(day, 333, DATEADD(day, -32, GETDATE())), 1),
+    ('9876540046', 'Vedant Thakkar', 'vedant.t@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 98700.00, 0, 'APPROVED', DATEADD(day, -36, GETDATE()), 'USER', 'DASHBOARD', 'MEDIUM', '1988-12-01', 'Indian', '45, Lake Road, Mount Abu - 307501', 'https://randomuser.me/api/portraits/men/46.jpg', DATEADD(hour, -4, GETDATE()), 'vedant.t@okaxis', 'PERM_VEDANT2_' + CONVERT(VARCHAR, CAST(DATEADD(day, -36, GETDATE()) AS BIGINT)), DATEADD(day, 329, DATEADD(day, -36, GETDATE())), 1),
+    ('9876540047', 'Sanya Kapoor', 'sanya.k@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 23450.00, 1, 'APPROVED', DATEADD(day, -53, GETDATE()), 'USER', 'DASHBOARD', 'HIGH', '1986-04-09', 'Indian', '67, MG Road, Kota - 324001', 'https://randomuser.me/api/portraits/women/47.jpg', DATEADD(hour, -96, GETDATE()), 'sanya.k@ybl', 'PERM_SANYA2_' + CONVERT(VARCHAR, CAST(DATEADD(day, -53, GETDATE()) AS BIGINT)), DATEADD(day, 312, DATEADD(day, -53, GETDATE())), 1),
+    ('9876540048', 'Reyansh Nanda', 'reyansh.n2@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 65400.50, 0, 'REJECTED', DATEADD(day, -68, GETDATE()), 'USER', 'DASHBOARD', 'MEDIUM', '1985-07-15', 'Indian', '12, Civil Lines, Ujjain - 456001', 'https://randomuser.me/api/portraits/men/48.jpg', DATEADD(hour, -120, GETDATE()), 'reyansh.n2@okicici', 'PERM_REYANSH3_' + CONVERT(VARCHAR, CAST(DATEADD(day, -68, GETDATE()) AS BIGINT)), DATEADD(day, 297, DATEADD(day, -68, GETDATE())), 1),
+    ('9876540049', 'Aarohi Patel', 'aarohi.p@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 8760.00, 0, 'PENDING', DATEADD(day, -12, GETDATE()), 'USER', 'KYC_PENDING', 'LOW', '1994-10-20', 'Indian', '34, Mall Road, Manali - 175131', 'https://randomuser.me/api/portraits/women/49.jpg', DATEADD(hour, -8, GETDATE()), 'aarohi.p@okhdfcbank', 'PERM_AAROHI_' + CONVERT(VARCHAR, CAST(DATEADD(day, -12, GETDATE()) AS BIGINT)), DATEADD(day, 353, DATEADD(day, -12, GETDATE())), 1),
+    ('9876540050', 'Shaurya Yadav', 'shaurya.y@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 34500.00, 0, 'APPROVED', DATEADD(day, -25, GETDATE()), 'USER', 'DASHBOARD', 'LOW', '1991-05-27', 'Indian', '56, Lake View, Nainital - 263001', 'https://randomuser.me/api/portraits/men/50.jpg', DATEADD(hour, -2, GETDATE()), 'shaurya.y@okaxis', 'PERM_SHAURYA3_' + CONVERT(VARCHAR, CAST(DATEADD(day, -25, GETDATE()) AS BIGINT)), DATEADD(day, 340, DATEADD(day, -25, GETDATE())), 1)
+) AS user_data (
+    mobile, name, email, mpin_hash, wallet_balance, is_wallet_frozen, kyc_status, created_at, 
+    role, step, risk_level, date_of_birth, nationality, address, profile_picture, 
+    last_active, upi_id, permanent_token, permanent_token_expiry, version
+);
+GO
+
+-- ============================================
+-- 4. CREATE KYC DOCUMENTS FOR ALL USERS
+-- ============================================
+
+INSERT INTO kyc_documents (user_id, document_type, document_url, status, submitted_at, reviewed_at, reviewed_by, rejection_reason)
+SELECT 
+    u.id,
+    CASE 
+        WHEN RAND(CHECKSUM(NEWID())) < 0.33 THEN 'AADHAR'
+        WHEN RAND(CHECKSUM(NEWID())) < 0.66 THEN 'PAN'
+        ELSE 'DRIVING_LICENSE'
+    END,
+    'https://storage.example.com/kyc/user_' + CAST(u.id AS VARCHAR) + '_doc.jpg',
+    u.kyc_status,
+    DATEADD(day, -CAST(RAND(CHECKSUM(NEWID())) * 60 AS INT), GETDATE()),
+    CASE 
+        WHEN u.kyc_status = 'APPROVED' THEN DATEADD(day, -CAST(RAND(CHECKSUM(NEWID())) * 30 AS INT), GETDATE())
+        WHEN u.kyc_status = 'REJECTED' THEN DATEADD(day, -CAST(RAND(CHECKSUM(NEWID())) * 30 AS INT), GETDATE())
+        ELSE NULL
+    END,
+    CASE 
+        WHEN u.kyc_status IN ('APPROVED', 'REJECTED') THEN 1
+        ELSE NULL
+    END,
+    CASE 
+        WHEN u.kyc_status = 'REJECTED' THEN 'Document is blurry. Please upload a clearer image.'
+        ELSE NULL
+    END
+FROM users u
+WHERE u.id > 1;
+
+-- Add second document (Selfie) for 70% of users
+INSERT INTO kyc_documents (user_id, document_type, document_url, status, submitted_at, reviewed_at, reviewed_by)
+SELECT 
+    u.id,
+    'SELFIE',
+    'https://storage.example.com/kyc/user_' + CAST(u.id AS VARCHAR) + '_selfie.jpg',
+    u.kyc_status,
+    DATEADD(day, -CAST(RAND(CHECKSUM(NEWID())) * 60 AS INT), GETDATE()),
+    CASE 
+        WHEN u.kyc_status = 'APPROVED' THEN DATEADD(day, -CAST(RAND(CHECKSUM(NEWID())) * 30 AS INT), GETDATE())
+        ELSE NULL
+    END,
+    CASE 
+        WHEN u.kyc_status = 'APPROVED' THEN 1
+        ELSE NULL
+    END
+FROM users u
+WHERE u.id > 1 AND RAND(CHECKSUM(NEWID())) < 0.7;
+GO
+
+-- ============================================
+-- 5. CREATE TRANSACTIONS FOR ALL USERS
+-- ============================================
+
+DECLARE @UserCursor CURSOR;
+DECLARE @CurrentUserId INT;
+DECLARE @CurrentUserName NVARCHAR(100);
+DECLARE @TxnCounter INT;
+
+SET @UserCursor = CURSOR FOR
+SELECT id, name FROM users WHERE id > 1 ORDER BY id;
+
+OPEN @UserCursor;
+FETCH NEXT FROM @UserCursor INTO @CurrentUserId, @CurrentUserName;
+
+WHILE @@FETCH_STATUS = 0
+BEGIN
+    SET @TxnCounter = 1;
+    
+    -- Create 5-12 transactions per user
+    DECLARE @TxnCount INT = 5 + CAST(RAND(CHECKSUM(NEWID())) * 8 AS INT);
+    DECLARE @RunningBalance DECIMAL(10,2) = 0;
+    
+    WHILE @TxnCounter <= @TxnCount
+    BEGIN
+        DECLARE @TxnAmount DECIMAL(10,2);
+        DECLARE @TxnType NVARCHAR(20);
+        DECLARE @TxnStatus NVARCHAR(20);
+        DECLARE @TxnMethod NVARCHAR(50);
+        DECLARE @TxnRef NVARCHAR(255);
+        DECLARE @TxnId NVARCHAR(50);
+        DECLARE @TxnDate DATETIME;
+        DECLARE @TxnIp NVARCHAR(45);
+        DECLARE @TxnDevice NVARCHAR(255);
+        
+        -- First transaction is always a credit (initial deposit)
+        IF @TxnCounter = 1
+        BEGIN
+            SET @TxnType = 'CREDIT';
+            SET @TxnAmount = 5000 + (RAND(CHECKSUM(NEWID())) * 45000); -- 5000-50000
+            SET @TxnRef = 'Initial Deposit';
+        END
+        ELSE
+        BEGIN
+            -- Random type for subsequent transactions (60% CREDIT, 40% DEBIT)
+            IF RAND(CHECKSUM(NEWID())) > 0.4
+                SET @TxnType = 'CREDIT'
+            ELSE
+                SET @TxnType = 'DEBIT';
+            
+            -- Random amount (100-25000)
+            SET @TxnAmount = 100 + (RAND(CHECKSUM(NEWID())) * 24900);
+            
+            -- Reference based on type
+            IF @TxnType = 'CREDIT'
+            BEGIN
+                DECLARE @RefCredit INT = CAST(RAND(CHECKSUM(NEWID())) * 3 AS INT);
+                SET @TxnRef = CASE @RefCredit
+                    WHEN 0 THEN 'Salary Credit'
+                    WHEN 1 THEN 'Bank Transfer'
+                    ELSE 'Cash Deposit'
+                END;
+            END
+            ELSE
+            BEGIN
+                DECLARE @RefDebit INT = CAST(RAND(CHECKSUM(NEWID())) * 5 AS INT);
+                SET @TxnRef = CASE @RefDebit
+                    WHEN 0 THEN 'Shopping'
+                    WHEN 1 THEN 'Bill Payment'
+                    WHEN 2 THEN 'Restaurant'
+                    WHEN 3 THEN 'Online Purchase'
+                    ELSE 'ATM Withdrawal'
+                END;
+            END
+        END
+        
+        -- Status (85% COMPLETED, 10% PENDING, 5% FAILED)
+        DECLARE @StatusRand FLOAT = RAND(CHECKSUM(NEWID()));
+        IF @StatusRand < 0.85
+            SET @TxnStatus = 'COMPLETED'
+        ELSE IF @StatusRand < 0.95
+            SET @TxnStatus = 'PENDING'
+        ELSE
+            SET @TxnStatus = 'FAILED';
+        
+        -- Payment method
+        DECLARE @MethodRand FLOAT = RAND(CHECKSUM(NEWID()));
+        SET @TxnMethod = CASE 
+            WHEN @MethodRand < 0.35 THEN 'BANK_TRANSFER'
+            WHEN @MethodRand < 0.60 THEN 'WALLET'
+            WHEN @MethodRand < 0.80 THEN 'CREDIT_CARD'
+            WHEN @MethodRand < 0.95 THEN 'DEBIT_CARD'
+            ELSE 'UPI'
+        END;
+        
+        -- Transaction ID
+        SET @TxnId = 'TXN' + FORMAT(@CurrentUserId, '000') + 
+                    FORMAT(@TxnCounter, '00') + 
+                    FORMAT(CAST(RAND(CHECKSUM(NEWID())) * 999 AS INT), '000');
+        
+        -- Date (spread over last 90 days, more recent transactions have higher probability)
+        DECLARE @DaysAgo INT = CAST(
+            CASE 
+                WHEN RAND(CHECKSUM(NEWID())) < 0.3 THEN RAND(CHECKSUM(NEWID())) * 7  -- 30% last 7 days
+                WHEN RAND(CHECKSUM(NEWID())) < 0.6 THEN 7 + RAND(CHECKSUM(NEWID())) * 23 -- 30% last 30 days
+                ELSE 30 + RAND(CHECKSUM(NEWID())) * 60 -- 40% older
+            END AS INT
+        );
+        
+        SET @TxnDate = DATEADD(day, -@DaysAgo, 
+                              DATEADD(hour, -CAST(RAND(CHECKSUM(NEWID())) * 24 AS INT), 
+                                     DATEADD(minute, -CAST(RAND(CHECKSUM(NEWID())) * 60 AS INT), GETDATE())));
+        
+        -- IP Address
+        SET @TxnIp = CAST(CAST(RAND(CHECKSUM(NEWID())) * 255 AS INT) AS VARCHAR) + '.' +
+                     CAST(CAST(RAND(CHECKSUM(NEWID())) * 255 AS INT) AS VARCHAR) + '.' +
+                     CAST(CAST(RAND(CHECKSUM(NEWID())) * 255 AS INT) AS VARCHAR) + '.' +
+                     CAST(CAST(RAND(CHECKSUM(NEWID())) * 255 AS INT) AS VARCHAR);
+        
+        -- Device Info
+        DECLARE @DeviceRand FLOAT = RAND(CHECKSUM(NEWID()));
+        SET @TxnDevice = CASE 
+            WHEN @DeviceRand < 0.4 THEN 'Mobile App - Android 14'
+            WHEN @DeviceRand < 0.7 THEN 'Mobile App - iOS 17'
+            WHEN @DeviceRand < 0.9 THEN 'Web Browser - Chrome 120'
+            ELSE 'Web Browser - Safari 17'
+        END;
+        
+        -- Update running balance (only for completed transactions)
+        IF @TxnStatus = 'COMPLETED'
+        BEGIN
+            IF @TxnType = 'CREDIT'
+                SET @RunningBalance = @RunningBalance + @TxnAmount;
+            ELSE
+                SET @RunningBalance = @RunningBalance - @TxnAmount;
+        END
+        
+        -- Insert transaction
+        INSERT INTO wallet_transactions (
+            user_id,
+            user_name,
+            transaction_id,
+            amount,
+            type,
+            status,
+            payment_method,
+            reference,
+            ip_address,
+            device_info,
+            created_at,
+            balance_after
+        )
+        VALUES (
+            @CurrentUserId,
+            @CurrentUserName,
+            @TxnId,
+            @TxnAmount,
+            @TxnType,
+            @TxnStatus,
+            @TxnMethod,
+            @TxnRef,
+            @TxnIp,
+            @TxnDevice,
+            @TxnDate,
+            CASE WHEN @TxnStatus = 'COMPLETED' THEN @RunningBalance ELSE NULL END
+        );
+        
+        SET @TxnCounter = @TxnCounter + 1;
+    END
+    
+    -- Update user's final wallet balance (only completed transactions)
+    UPDATE users 
+    SET wallet_balance = @RunningBalance,
+        last_active = GETDATE()
+    WHERE id = @CurrentUserId;
+    
+    FETCH NEXT FROM @UserCursor INTO @CurrentUserId, @CurrentUserName;
+END
+
+CLOSE @UserCursor;
+DEALLOCATE @UserCursor;
+GO
+
+-- ============================================
+-- 6. CREATE PAYMENT REQUESTS (for testing)
+-- ============================================
+
+INSERT INTO payment_requests (requester_id, target_id, amount, note, status, created_at, expires_at)
+SELECT 
+    u1.id,
+    u2.id,
+    500 + (RAND(CHECKSUM(NEWID())) * 4500),
+    'Payment for services',
+    CASE 
+        WHEN RAND(CHECKSUM(NEWID())) < 0.4 THEN 'PENDING'
+        WHEN RAND(CHECKSUM(NEWID())) < 0.7 THEN 'ACCEPTED'
+        ELSE 'REJECTED'
+    END,
+    DATEADD(day, -CAST(RAND(CHECKSUM(NEWID())) * 30 AS INT), GETDATE()),
+    DATEADD(day, 1, GETDATE())
+FROM users u1
+CROSS JOIN users u2
+WHERE u1.id > 1 AND u2.id > 1 AND u1.id != u2.id
+AND RAND(CHECKSUM(NEWID())) < 0.05  -- 5% chance of payment request between any two users
+AND u1.id IN (SELECT TOP 10 id FROM users WHERE id > 1 ORDER BY NEWID());
+GO
+
+-- ============================================
+-- 7. VERIFY ALL DATA
+-- ============================================
+
+-- Check users count
+SELECT 'USERS COUNT' as section, COUNT(*) as count FROM users
+UNION ALL
+SELECT 'KYC DOCUMENTS COUNT', COUNT(*) FROM kyc_documents
+UNION ALL
+SELECT 'TRANSACTIONS COUNT', COUNT(*) FROM wallet_transactions
+UNION ALL
+SELECT 'PAYMENT REQUESTS COUNT', COUNT(*) FROM payment_requests;
+GO
+
+-- Show sample users with all fields
+SELECT TOP 5 
+    id,
+    mobile,
+    name,
+    email,
+    kyc_status,
+    wallet_balance,
+    is_wallet_frozen as frozen,
+    risk_level,
+    created_at,
+    last_active,
+    upi_id
+FROM users
+ORDER BY id;
+GO
+
+-- Show sample transactions with all fields
+SELECT TOP 10 
+    t.id,
+    t.transaction_id,
+    t.user_id,
+    t.user_name,
+    t.amount,
+    t.type,
+    t.status,
+    t.payment_method,
+    t.reference,
+    t.ip_address,
+    t.device_info,
+    t.created_at,
+    t.balance_after
+FROM wallet_transactions t
+ORDER BY t.created_at DESC;
+GO
+
+-- Show sample KYC documents
+SELECT TOP 10 
+    k.id,
+    u.name as user_name,
+    k.document_type,
+    k.status,
+    k.submitted_at,
+    k.reviewed_at
+FROM kyc_documents k
+JOIN users u ON k.user_id = u.id
+ORDER BY k.submitted_at DESC;
+GO
+
+-- Statistics summary
+SELECT 
+    'Total Users: ' + CAST(COUNT(*) AS VARCHAR) 
+FROM users
+UNION ALL
+SELECT 
+    'Active Users: ' + CAST(SUM(CASE WHEN is_wallet_frozen = 0 THEN 1 ELSE 0 END) AS VARCHAR)
+FROM users
+UNION ALL
+SELECT 
+    'Frozen Wallets: ' + CAST(SUM(CASE WHEN is_wallet_frozen = 1 THEN 1 ELSE 0 END) AS VARCHAR)
+FROM users
+UNION ALL
+SELECT 
+    'KYC Approved: ' + CAST(SUM(CASE WHEN kyc_status = 'APPROVED' THEN 1 ELSE 0 END) AS VARCHAR)
+FROM users
+UNION ALL
+SELECT 
+    'KYC Pending: ' + CAST(SUM(CASE WHEN kyc_status = 'PENDING' THEN 1 ELSE 0 END) AS VARCHAR)
+FROM users
+UNION ALL
+SELECT 
+    'KYC Rejected: ' + CAST(SUM(CASE WHEN kyc_status = 'REJECTED' THEN 1 ELSE 0 END) AS VARCHAR)
+FROM users
+UNION ALL
+SELECT 
+    'Total Balance: $' + FORMAT(SUM(wallet_balance), 'N2')
+FROM users
+UNION ALL
+SELECT 
+    'Total Transactions: ' + CAST(COUNT(*) AS VARCHAR)
+FROM wallet_transactions
+UNION ALL
+SELECT 
+    'Total Volume: $' + FORMAT(SUM(amount), 'N2')
+FROM wallet_transactions
+WHERE status = 'COMPLETED';
+GO
