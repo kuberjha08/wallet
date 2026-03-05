@@ -199,7 +199,7 @@ const UserManagement = ({ setCurrentPage, setSelectedUser }) => {
       setUsers(response.data.content || []);
       setTotalUsers(response.data.totalElements || 0);
     } catch (error) {
-      console.error("Error fetching users:", error);
+      console.log("Error fetching users:", error);
     } finally {
       setLoadingStates((prev) => ({ ...prev, users: false }));
     }
@@ -212,7 +212,7 @@ const UserManagement = ({ setCurrentPage, setSelectedUser }) => {
       const response = await api.get("/admin/users/stats");
       setStats(response.data);
     } catch (error) {
-      console.error("Error fetching stats:", error);
+      console.log("Error fetching stats:", error);
     } finally {
       setLoadingStates((prev) => ({ ...prev, stats: false }));
     }

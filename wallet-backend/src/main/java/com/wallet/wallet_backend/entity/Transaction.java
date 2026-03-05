@@ -25,7 +25,7 @@ public class Transaction {
     @Column(name = "user_name")
     private String userName;
 
-    @Column(name = "type") // DEPOSIT, WITHDRAWAL, TRANSFER
+    @Column(name = "type") // DEPOSIT, WITHDRAWAL, TRANSFER, CREDIT, DEBIT
     private String type;
 
     @Column(nullable = false)

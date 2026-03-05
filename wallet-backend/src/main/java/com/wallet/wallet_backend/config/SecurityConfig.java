@@ -15,79 +15,70 @@ import java.util.Arrays;
 @Configuration
 public class SecurityConfig {
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Add this line
-                .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/health",
-                                "/users/send-otp",
-                                "/users/verify-otp",
-                                "/users/set-mpin",
-                                "/users/verify-mpin",
-                                "/users/register",
-                                "/users/create-admin",
-                                "/users/forgot-mpin/**",
-                                "/admin/login",
-                                "/users/login-token",
-                                "/users/login-mpin")
-                        .permitAll()
-                        .requestMatchers("/wallet/**").hasAnyAuthority("USER", "ADMIN")
-                        .requestMatchers("/payment/**").hasAuthority("USER")
-                        .requestMatchers("/qr/**").hasAuthority("USER")
-                        .requestMatchers("/dashboard/**").hasAuthority("USER")
+        @Bean
+        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+                http
+                                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                                .csrf(csrf -> csrf.disable())
+                                .authorizeHttpRequests(auth -> auth
+                                                // Public endpoints
+                                                .requestMatchers(
+                                                                "/health",
+                                                                "/users/send-otp",
+                                                                "/users/verify-otp",
+                                                                "/users/set-mpin",
+                                                                "/users/verify-mpin",
+                                                                "/users/register",
+                                                                "/users/create-admin",
+                                                                "/users/forgot-mpin/**",
+                                                                "/api/admin/login",
+                                                                "/users/login-token",
+                                                                "/users/login-mpin")
+                                                .permitAll()
 
-                        // Admin endpoints
-                        .requestMatchers("/admin/dashboard/**").hasAuthority("ADMIN")
-                        .requestMatchers("/admin/users/**").hasAuthority("ADMIN")
-                        .requestMatchers("/admin/kyc/**").hasAuthority("ADMIN")
-                        .requestMatchers("/admin/transactions/**").hasAuthority("ADMIN")
-                        .requestMatchers("/admin/wallet-management/**").hasAuthority("ADMIN")
-                        .requestMatchers("/admin/reports/**").hasAuthority("ADMIN")
+                                                // ✅ IMPORTANT - PEHLE SPECIFIC, PHIR GENERAL
+                                                .requestMatchers("/qr/generate-static")
+                                                .hasAnyAuthority("USER", "ADMIN", "SUPER_ADMIN")
+                                                .requestMatchers("/qr/generate-payment")
+                                                .hasAnyAuthority("USER", "ADMIN", "SUPER_ADMIN")
+                                                .requestMatchers("/qr/scan")
+                                                .hasAnyAuthority("USER", "ADMIN", "SUPER_ADMIN")
+                                                .requestMatchers("/qr/set-upi")
+                                                .hasAnyAuthority("USER", "ADMIN", "SUPER_ADMIN")
 
-                        .anyRequest().authenticated())
-                .addFilterBefore(new JwtAuthFilter(), UsernamePasswordAuthenticationFilter.class);
+                                                // Ya phir ek line mein sab
+                                                .requestMatchers("/qr/**")
+                                                .hasAnyAuthority("USER", "ADMIN", "SUPER_ADMIN")
 
-        return http.build();
-    }
+                                                .requestMatchers("/wallet/**")
+                                                .hasAnyAuthority("USER", "ADMIN", "SUPER_ADMIN")
+                                                .requestMatchers("/payment/**")
+                                                .hasAnyAuthority("USER", "ADMIN", "SUPER_ADMIN")
+                                                .requestMatchers("/dashboard/**")
+                                                .hasAnyAuthority("USER", "ADMIN", "SUPER_ADMIN")
+                                                .requestMatchers("/transactions/**")
+                                                .hasAnyAuthority("USER", "ADMIN", "SUPER_ADMIN")
+                                                .requestMatchers("/api/admin/**")
+                                                .hasAnyAuthority("ADMIN", "SUPER_ADMIN")
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-    CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(Arrays.asList(
-    "http://localhost:5173",
-    "http://localhost:3000",
-    "http://localhost:8080",
-    "http://127.0.0.1:5173",
-    "http://127.0.0.1:3000",
-    "http://16.171.153.74:1433",
-    "http://16.171.153.74:8080",
-    "http://16.171.153.74"
-    ));
-    configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE",
-    "OPTIONS", "PATCH"));
-    configuration.setAllowedHeaders(Arrays.asList("*"));
-    configuration.setAllowCredentials(true);
-    configuration.setMaxAge(3600L);
+                                                .anyRequest().authenticated())
+                                .addFilterBefore(new JwtAuthFilter(), UsernamePasswordAuthenticationFilter.class);
 
-    UrlBasedCorsConfigurationSource source = new
-    UrlBasedCorsConfigurationSource();
-    source.registerCorsConfiguration("/**", configuration);
-    return source;
-    }
-    // @Bean
-    // public CorsConfigurationSource corsConfigurationSource() {
-    //     CorsConfiguration configuration = new CorsConfiguration();
-    //     configuration.setAllowedOriginPatterns(Arrays.asList("*"));
-    //     configuration.setAllowedMethods(Arrays.asList("*"));
-    //     configuration.setAllowedHeaders(Arrays.asList("*"));
-    //     configuration.setAllowCredentials(false); // IMPORTANT
-    //     configuration.setMaxAge(3600L);
+                return http.build();
+        }
 
-    //     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-    //     source.registerCorsConfiguration("/**", configuration);
-    //     return source;
-    // }
+        @Bean
+        public CorsConfigurationSource corsConfigurationSource() {
+                CorsConfiguration configuration = new CorsConfiguration();
+                configuration.setAllowedOriginPatterns(Arrays.asList("*"));
+                configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+                configuration.setAllowedHeaders(Arrays.asList("*"));
+                configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
+                configuration.setAllowCredentials(true);
+                configuration.setMaxAge(3600L);
+
+                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+                source.registerCorsConfiguration("/**", configuration);
+                return source;
+        }
 }

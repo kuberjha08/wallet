@@ -180,7 +180,7 @@ const KYCManagement = ({ setCurrentPage }) => {
       setKycRequests(response.data.content || []);
       setTotalKyc(response.data.totalElements || 0);
     } catch (error) {
-      console.error("Error fetching KYC:", error);
+      console.log("Error fetching KYC:", error);
       setError("Failed to load KYC requests");
       toast.error("Failed to load KYC requests");
     } finally {
@@ -194,7 +194,7 @@ const KYCManagement = ({ setCurrentPage }) => {
       const response = await api.get("/admin/kyc/stats");
       setKycStats(response.data);
     } catch (error) {
-      console.error("Error fetching KYC stats:", error);
+      console.log("Error fetching KYC stats:", error);
     }
   }, []);
 
@@ -213,7 +213,7 @@ const KYCManagement = ({ setCurrentPage }) => {
       await fetchKycRequests();
       await fetchKycStats();
     } catch (error) {
-      console.error("Error approving KYC:", error);
+      console.log("Error approving KYC:", error);
       toast.error(error.response?.data?.message || "Failed to approve KYC");
     } finally {
       setLoading(prev => ({ ...prev, action: false }));
@@ -233,7 +233,7 @@ const KYCManagement = ({ setCurrentPage }) => {
       await fetchKycRequests();
       await fetchKycStats();
     } catch (error) {
-      console.error("Error rejecting KYC:", error);
+      console.log("Error rejecting KYC:", error);
       toast.error(error.response?.data?.message || "Failed to reject KYC");
     } finally {
       setLoading(prev => ({ ...prev, action: false }));
@@ -274,7 +274,7 @@ const KYCManagement = ({ setCurrentPage }) => {
     try {
       toast.info("Export feature coming soon");
     } catch (error) {
-      console.error("Error exporting:", error);
+      console.log("Error exporting:", error);
     }
   };
 

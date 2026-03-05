@@ -9,6 +9,7 @@ import com.wallet.wallet_backend.service.WalletService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
@@ -79,27 +80,29 @@ public class AdminWalletService {
     }
 
     public List<Map<String, Object>> getRecentWalletTransactions(int limit) {
-        Pageable pageable = PageRequest.of(0, limit);
-        Page<WalletTransaction> transactions = walletTransactionRepository.findAllByOrderByCreatedAtDesc(pageable);
-        
-        return transactions.getContent().stream()
-                .map(tx -> {
-                    Map<String, Object> map = new HashMap<>();
-                    map.put("id", tx.getId());
-                    map.put("userId", tx.getUserId());
-                    
-                    Optional<User> user = userRepository.findById(tx.getUserId());
-                    map.put("user", user.map(User::getName).orElse("Unknown"));
-                    
-                    map.put("type", tx.getType());
-                    map.put("amount", tx.getAmount());
-                    map.put("date", tx.getCreatedAt());
-                    
-                    return map;
-                })
-                .collect(Collectors.toList());
-    }
-
+    Pageable pageable = PageRequest.of(0, limit, Sort.by("createdAt").descending());
+    
+    // Page return karega, isliye .getContent() use karo
+    Page<WalletTransaction> transactionPage = walletTransactionRepository.findAllByOrderByCreatedAtDesc(pageable);
+    List<WalletTransaction> transactions = transactionPage.getContent();
+    
+    return transactions.stream()
+            .map(tx -> {
+                Map<String, Object> map = new HashMap<>();
+                map.put("id", tx.getId());
+                map.put("userId", tx.getUserId());
+                
+                Optional<User> user = userRepository.findById(tx.getUserId());
+                map.put("user", user.map(User::getName).orElse("Unknown"));
+                
+                map.put("type", tx.getType());
+                map.put("amount", tx.getAmount());
+                map.put("date", tx.getCreatedAt());
+                
+                return map;
+            })
+            .collect(Collectors.toList());
+}
     @Transactional
     public void adjustWallet(Long userId, Double amount, String type, String reason) {
         if ("CREDIT".equalsIgnoreCase(type)) {

@@ -23,7 +23,7 @@ public class WalletTransaction {
     @Column(nullable = false)
     private Double amount;
 
-    @Column(name = "balance_after")
+    @Column(name = "balance_after")  // ADD THIS FIELD
     private Double balanceAfter;
 
     @Column(nullable = false)
@@ -32,7 +32,7 @@ public class WalletTransaction {
     private String reference;
 
     @Column(name = "status")
-    private String status = "COMPLETED";  // ✅ DEFAULT VALUE SET KARO
+    private String status = "COMPLETED";
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -43,8 +43,9 @@ public class WalletTransaction {
         this.amount = amount;
         this.type = type;
         this.reference = reference;
-        this.status = "COMPLETED";  // ✅ YAHAN BHI SET KARO
+        this.status = "COMPLETED";
         this.createdAt = LocalDateTime.now();
+        // balanceAfter will be set separately
     }
 
     @PrePersist
@@ -52,7 +53,7 @@ public class WalletTransaction {
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
         }
-        if (status == null) {  // ✅ NULL CHECK
+        if (status == null) {
             status = "COMPLETED";
         }
     }

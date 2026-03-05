@@ -81,7 +81,7 @@ const Dashboard = ({ setCurrentPage }) => {
         const userData = TokenManager.getUser();
         setUser(userData);
       } catch (error) {
-        console.error("Error fetching user:", error);
+        console.log("Error fetching user:", error);
       } finally {
         setLoadingStates((prev) => ({ ...prev, user: false }));
       }
@@ -100,7 +100,7 @@ const Dashboard = ({ setCurrentPage }) => {
           activeWallets: response.data.activeWallets || 0,
         });
       } catch (error) {
-        console.error("Error fetching user stats:", error);
+        console.log("Error fetching user stats:", error);
       } finally {
         setLoadingStates((prev) => ({ ...prev, userStats: false }));
       }
@@ -115,7 +115,7 @@ const Dashboard = ({ setCurrentPage }) => {
           yesterdayVolume: response.data.yesterdayVolume || 0,
         });
       } catch (error) {
-        console.error("Error fetching wallet stats:", error);
+        console.log("Error fetching wallet stats:", error);
       } finally {
         setLoadingStates((prev) => ({ ...prev, walletStats: false }));
       }
@@ -129,7 +129,7 @@ const Dashboard = ({ setCurrentPage }) => {
           todayCount: response.data.todayCount || 0,
         });
       } catch (error) {
-        console.error("Error fetching transaction stats:", error);
+        console.log("Error fetching transaction stats:", error);
       } finally {
         setLoadingStates((prev) => ({ ...prev, transactionStats: false }));
       }
@@ -140,7 +140,7 @@ const Dashboard = ({ setCurrentPage }) => {
         const response = await api.get("/admin/transactions?page=0&size=5");
         setRecentTransactions(response.data.content || []);
       } catch (error) {
-        console.error("Error fetching recent transactions:", error);
+        console.log("Error fetching recent transactions:", error);
       } finally {
         setLoadingStates((prev) => ({ ...prev, recentTransactions: false }));
       }
@@ -300,7 +300,7 @@ const Dashboard = ({ setCurrentPage }) => {
         setRecentTransactions(txRes.data.content || []);
         setLoadingStates((prev) => ({ ...prev, recentTransactions: false }));
       } catch (error) {
-        console.error("Error refreshing data:", error);
+        console.log("Error refreshing data:", error);
       }
     };
 

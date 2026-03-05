@@ -299,7 +299,7 @@ const UserDetails = ({ user, setCurrentPage }) => {
       const response = await api.get(`/admin/users/${user.id}`);
       setUserData(response.data);
     } catch (error) {
-      console.error("Error fetching user details:", error);
+      console.log("Error fetching user details:", error);
       setErrors((prev) => ({
         ...prev,
         user: error.response?.data?.message || "Failed to load user details",
@@ -325,7 +325,7 @@ const UserDetails = ({ user, setCurrentPage }) => {
       );
       setRecentActivities(response.data.content || []);
     } catch (error) {
-      console.error("Error fetching transactions:", error);
+      console.log("Error fetching transactions:", error);
       setErrors((prev) => ({
         ...prev,
         transactions:
@@ -368,7 +368,7 @@ const UserDetails = ({ user, setCurrentPage }) => {
       });
       await fetchUserDetails(); // Wait for refresh
     } catch (error) {
-      console.error("Error freezing wallet:", error);
+      console.log("Error freezing wallet:", error);
     } finally {
       setGlobalLoading({
         open: false,
@@ -389,7 +389,7 @@ const UserDetails = ({ user, setCurrentPage }) => {
       await api.post(`/admin/users/${user.id}/unfreeze`);
       await fetchUserDetails(); // Wait for refresh
     } catch (error) {
-      console.error("Error unfreezing wallet:", error);
+      console.log("Error unfreezing wallet:", error);
     } finally {
       setGlobalLoading({
         open: false,

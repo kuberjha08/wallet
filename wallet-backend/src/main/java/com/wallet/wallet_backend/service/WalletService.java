@@ -22,52 +22,58 @@ public class WalletService {
     }
     
     @Transactional
-    public void credit(Long userId, Double amount, String reference) {
-        if (amount <= 0) throw new RuntimeException("Amount must be greater than zero");
-        
-        User user = userRepository.findByIdForUpdate(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        
-        user.setWalletBalance(user.getWalletBalance() + amount);
-        
-        WalletTransaction txn = WalletTransaction.builder()
-                .userId(userId)
-                .amount(amount)
-                .type("CREDIT")
-                .reference(reference)
-                .build();
-        
-        userRepository.save(user);
-        transactionRepository.save(txn);
+public void credit(Long userId, Double amount, String reference) {
+    if (amount <= 0) throw new RuntimeException("Amount must be greater than zero");
+    
+    User user = userRepository.findByIdForUpdate(userId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+    
+    Double balanceBefore = user.getWalletBalance();
+    Double balanceAfter = balanceBefore + amount;
+    user.setWalletBalance(balanceAfter);
+    
+    WalletTransaction txn = WalletTransaction.builder()
+            .userId(userId)
+            .amount(amount)
+            .type("CREDIT")
+            .reference(reference)
+            .build();
+    txn.setBalanceAfter(balanceAfter);  // SET BALANCE AFTER
+    
+    userRepository.save(user);
+    transactionRepository.save(txn);
+}
+
+@Transactional
+public void debit(Long userId, Double amount, String reference) {
+    if (amount <= 0) throw new RuntimeException("Amount must be greater than zero");
+    
+    User user = userRepository.findByIdForUpdate(userId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+    
+    if (user.getWalletFrozen()) {
+        throw new RuntimeException("Wallet is frozen");
     }
     
-    @Transactional
-    public void debit(Long userId, Double amount, String reference) {
-        if (amount <= 0) throw new RuntimeException("Amount must be greater than zero");
-        
-        User user = userRepository.findByIdForUpdate(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        
-        if (user.getWalletFrozen()) {
-            throw new RuntimeException("Wallet is frozen");
-        }
-        
-        if (user.getWalletBalance() < amount) {
-            throw new RuntimeException("Insufficient balance");
-        }
-        
-        user.setWalletBalance(user.getWalletBalance() - amount);
-        
-        WalletTransaction txn = WalletTransaction.builder()
-                .userId(userId)
-                .amount(amount)
-                .type("DEBIT")
-                .reference(reference)
-                .build();
-        
-        userRepository.save(user);
-        transactionRepository.save(txn);
+    if (user.getWalletBalance() < amount) {
+        throw new RuntimeException("Insufficient balance");
     }
+    
+    Double balanceBefore = user.getWalletBalance();
+    Double balanceAfter = balanceBefore - amount;
+    user.setWalletBalance(balanceAfter);
+    
+    WalletTransaction txn = WalletTransaction.builder()
+            .userId(userId)
+            .amount(amount)
+            .type("DEBIT")
+            .reference(reference)
+            .build();
+    txn.setBalanceAfter(balanceAfter);  // SET BALANCE AFTER
+    
+    userRepository.save(user);
+    transactionRepository.save(txn);
+}
     
     public List<WalletTransactionResponseDto> getStatement(Long userId) {
         return transactionRepository.findByUserIdOrderByCreatedAtDesc(userId)

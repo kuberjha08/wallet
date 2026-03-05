@@ -47,7 +47,7 @@ api.interceptors.response.use(
         if (error.response) {
             // The request was made and the server responded with a status code
             // that falls out of the range of 2xx
-            console.error('API Error Response:', {
+            console.log('API Error Response:', {
                 data: error.response.data,
                 status: error.response.status,
                 headers: error.response.headers,
@@ -60,10 +60,10 @@ api.interceptors.response.use(
             }
         } else if (error.request) {
             // The request was made but no response was received
-            console.error('API No Response:', error.request);
+            console.log('API No Response:', error.request);
         } else {
             // Something happened in setting up the request that triggered an Error
-            console.error('API Request Error:', error.message);
+            console.log('API Request Error:', error.message);
         }
 
         return Promise.reject(error);

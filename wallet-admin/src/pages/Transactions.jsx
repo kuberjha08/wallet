@@ -588,7 +588,7 @@ const Transactions = () => {
       const summaryResponse = await api.get("/admin/transactions/summary");
       setSummary(summaryResponse.data);
     } catch (error) {
-      console.error("Error fetching transactions:", error);
+      console.log("Error fetching transactions:", error);
       setError(error.response?.data?.message || "Failed to load transactions");
       toast.error("Failed to load transactions");
     } finally {
@@ -621,7 +621,7 @@ const Transactions = () => {
       window.open(response.data.url);
       toast.success(`Report exported as ${format.toUpperCase()}`);
     } catch (error) {
-      console.error("Error exporting transactions:", error);
+      console.log("Error exporting transactions:", error);
       toast.error("Failed to export report");
     } finally {
       setLoading((prev) => ({ ...prev, export: false }));

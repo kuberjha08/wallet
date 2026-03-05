@@ -721,7 +721,7 @@ const WalletManagement = () => {
         yesterdayVolume: response.data.yesterdayVolume || 0,
       }));
     } catch (error) {
-      console.error("Error fetching wallet overview:", error);
+      console.log("Error fetching wallet overview:", error);
       setErrors((prev) => ({ ...prev, overview: "Failed to load wallet overview" }));
       toast.error("Failed to load wallet overview");
     } finally {
@@ -742,7 +742,7 @@ const WalletManagement = () => {
         users: response.data || [],
       }));
     } catch (error) {
-      console.error("Error fetching user wallets:", error);
+      console.log("Error fetching user wallets:", error);
       setErrors((prev) => ({ ...prev, users: "Failed to load user wallets" }));
       toast.error("Failed to load user wallets");
     } finally {
@@ -763,7 +763,7 @@ const WalletManagement = () => {
         recentTransactions: response.data || [],
       }));
     } catch (error) {
-      console.error("Error fetching recent transactions:", error);
+      console.log("Error fetching recent transactions:", error);
       setErrors((prev) => ({ ...prev, transactions: "Failed to load recent transactions" }));
       toast.error("Failed to load recent transactions");
     } finally {
@@ -810,7 +810,7 @@ const WalletManagement = () => {
       setAdjustAmount("");
       setAdjustReason("");
     } catch (error) {
-      console.error("Error adjusting wallet:", error);
+      console.log("Error adjusting wallet:", error);
       toast.error(`Failed to ${adjustType} wallet`);
     } finally {
       setLoading((prev) => ({ ...prev, action: false }));
@@ -838,7 +838,7 @@ const WalletManagement = () => {
       
       return true;
     } catch (error) {
-      console.error("Error adjusting wallet:", error);
+      console.log("Error adjusting wallet:", error);
       throw error;
     } finally {
       setLoading((prev) => ({ ...prev, action: false }));
@@ -863,7 +863,7 @@ const WalletManagement = () => {
       toast.success(`${selectedIds.length} wallets frozen`);
       fetchUserWallets();
     } catch (error) {
-      console.error("Error bulk freezing:", error);
+      console.log("Error bulk freezing:", error);
       toast.error("Failed to freeze wallets");
     } finally {
       setLoading((prev) => ({ ...prev, action: false }));

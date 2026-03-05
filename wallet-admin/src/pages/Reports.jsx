@@ -441,7 +441,7 @@ const Reports = () => {
         },
       });
     } catch (error) {
-      console.error("Error fetching summary data:", error);
+      console.log("Error fetching summary data:", error);
       setError("Failed to load summary data");
       toast.error("Failed to load summary data");
     } finally {
@@ -513,7 +513,7 @@ const Reports = () => {
       setPreviewDialogOpen(true);
       toast.success("Report generated successfully");
     } catch (error) {
-      console.error("Error generating report:", error);
+      console.log("Error generating report:", error);
       setError(error.response?.data?.message || "Failed to generate report");
       toast.error("Failed to generate report");
     } finally {
@@ -543,7 +543,7 @@ const Reports = () => {
       toast.success(`Report exported as ${format.toUpperCase()}`);
       setExportDialogOpen(false);
     } catch (error) {
-      console.error("Error exporting report:", error);
+      console.log("Error exporting report:", error);
       toast.error("Failed to export report");
     } finally {
       setExporting(false);

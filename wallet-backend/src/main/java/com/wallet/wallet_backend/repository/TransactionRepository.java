@@ -9,12 +9,46 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
+    
+    Optional<Transaction> findByTransactionId(String transactionId);
+    
+    // ============ DONO METHODS ADD KARO ============
+    
+    // 1. Paginated version (with Pageable)
     Page<Transaction> findByUserId(Long userId, Pageable pageable);
     
-    Page<Transaction> findByStatus(String status, Pageable pageable);
+    // 2. Simple version (without Pageable) - YEH MISSING THA
+    List<Transaction> findByUserId(Long userId);
     
+    // 3. With type filter
+    Page<Transaction> findByUserIdAndType(Long userId, String type, Pageable pageable);
+    
+    @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.userId = :userId AND t.type = :type")
+    Double sumAmountByUserIdAndType(@Param("userId") Long userId, @Param("type") String type);
+    
+    @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.userId = :userId AND t.type = :type AND t.createdAt >= :date")
+    Double sumAmountByUserIdAndTypeAndDateAfter(@Param("userId") Long userId, 
+                                                @Param("type") String type,
+                                                @Param("date") LocalDateTime date);
+    
+    @Query("SELECT COUNT(t) FROM Transaction t WHERE t.userId = :userId")
+    Long countByUserId(@Param("userId") Long userId);
+    
+    @Query("SELECT COUNT(t) FROM Transaction t WHERE t.userId = :userId AND t.createdAt >= :date")
+    Long countByUserIdAndDateAfter(@Param("userId") Long userId, @Param("date") LocalDateTime date);
+    
+    @Query("SELECT t FROM Transaction t WHERE t.userId = :userId AND " +
+           "(LOWER(t.transactionId) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(t.reference) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    Page<Transaction> searchUserTransactions(@Param("userId") Long userId,
+                                             @Param("keyword") String keyword,
+                                             Pageable pageable);
+    
+    // Admin methods
+    Page<Transaction> findByStatus(String status, Pageable pageable);
     Page<Transaction> findByType(String type, Pageable pageable);
     
     @Query("SELECT t FROM Transaction t WHERE " +
@@ -28,7 +62,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.createdAt BETWEEN :start AND :end")
     Double sumAmountByDateRange(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
     
-    // SQL Server ke liye fixed query - CAST ki jagah CONVERT use karo
     @Query(value = "SELECT CONVERT(DATE, t.created_at) as date, COUNT(t.id) as count, SUM(t.amount) as volume " +
            "FROM transactions t WHERE t.created_at >= :since GROUP BY CONVERT(DATE, t.created_at)", 
            nativeQuery = true)
@@ -37,11 +70,4 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     @Query("SELECT t.type, COUNT(t) as count, SUM(t.amount) as total " +
            "FROM Transaction t WHERE t.createdAt >= :since GROUP BY t.type")
     List<Map<String, Object>> getTransactionSummary(@Param("since") LocalDateTime since);
-    
-    // YEH DO METHOD HAIN - CHECK KARO KI YE SAHI SE KAAM KAR RAHE HAIN
-    @Query("SELECT SUM(t.amount) FROM Transaction t WHERE t.userId = :userId AND t.type = :type")
-    Double sumAmountByUserIdAndType(@Param("userId") Long userId, @Param("type") String type);
-    
-    @Query("SELECT COUNT(t) FROM Transaction t WHERE t.userId = :userId")
-    Long countByUserId(@Param("userId") Long userId);
 }
