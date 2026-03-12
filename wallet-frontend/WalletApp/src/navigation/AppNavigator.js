@@ -1,6 +1,7 @@
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
+import { View, ActivityIndicator } from "react-native"; // Add this import
 
 import { useAuth } from "../context/AuthContext";
 import AuthStack from "./AuthStack";
@@ -10,17 +11,23 @@ import RequestMoneyScreen from "../screens/payment/RequestMoneyScreen";
 import AddMoneyScreen from "../screens/payment/AddMoneyScreen";
 import WithdrawScreen from "../screens/payment/WithdrawScreen";
 import ScanQRScreen from "../screens/payment/ScanQRScreen";
-import LoadingModal from "../components/LoadingModal";
-import { COLORS } from "../utils/constants"; // Add this import
 import TransactionDetailsScreen from "../screens/main/TransactionDetailsScreen";
+import { COLORS } from "../utils/constants";
 
 const Stack = createStackNavigator();
+
+// Simple loading component instead of importing LoadingModal
+const LoadingScreen = () => (
+  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
+    <ActivityIndicator size="large" color={COLORS.primary} />
+  </View>
+);
 
 const AppNavigator = () => {
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
-    return <LoadingModal visible={true} message="Loading..." />;
+    return <LoadingScreen />;
   }
 
   return (
