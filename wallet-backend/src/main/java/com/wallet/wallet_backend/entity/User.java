@@ -32,7 +32,7 @@ public class User {
     @Column(name = "wallet_balance")
     private Double walletBalance = 0.0;
 
-    @Column(name = "is_wallet_frozen")
+@Column(name = "wallet_frozen")
     private Boolean walletFrozen = false;
 
     @Column(name = "kyc_status")

@@ -3,11 +3,11 @@
 -- ============================================
 
 -- 1. First, delete all existing data (order matters due to foreign keys)
-DELETE FROM wallet_transactions;
+DELETE FROM main_transactions;
 DELETE FROM kyc_documents;
 DELETE FROM users;
 DBCC CHECKIDENT ('users', RESEED, 0);
-DBCC CHECKIDENT ('wallet_transactions', RESEED, 0);
+DBCC CHECKIDENT ('main_transactions', RESEED, 0);
 DBCC CHECKIDENT ('kyc_documents', RESEED, 0);
 GO
 
@@ -20,7 +20,7 @@ INSERT INTO users (
     email,
     mpin_hash,
     wallet_balance,
-    is_wallet_frozen,
+    wallet_frozen,
     kyc_status,
     created_at,
     role,
@@ -73,7 +73,7 @@ INSERT INTO users (
     email,
     mpin_hash,
     wallet_balance,
-    is_wallet_frozen,
+    wallet_frozen,
     kyc_status,
     created_at,
     role,
@@ -151,7 +151,7 @@ SELECT * FROM (
     ('9876540049', 'Aarohi Patel', 'aarohi.p@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 8760.00, 0, 'PENDING', DATEADD(day, -12, GETDATE()), 'USER', 'KYC_PENDING', 'LOW', '1994-10-20', 'Indian', '34, Mall Road, Manali - 175131', 'https://randomuser.me/api/portraits/women/49.jpg', DATEADD(hour, -8, GETDATE()), 'aarohi.p@okhdfcbank', 'PERM_AAROHI_' + CONVERT(VARCHAR, CAST(DATEADD(day, -12, GETDATE()) AS BIGINT)), DATEADD(day, 353, DATEADD(day, -12, GETDATE())), 1),
     ('9876540050', 'Shaurya Yadav', 'shaurya.y@email.com', '$2a$10$it8z8DFL29K5K2X/7.fGWenh99LiqMmeRYtAq3HHJjcGHCurnmt8q', 34500.00, 0, 'APPROVED', DATEADD(day, -25, GETDATE()), 'USER', 'DASHBOARD', 'LOW', '1991-05-27', 'Indian', '56, Lake View, Nainital - 263001', 'https://randomuser.me/api/portraits/men/50.jpg', DATEADD(hour, -2, GETDATE()), 'shaurya.y@okaxis', 'PERM_SHAURYA3_' + CONVERT(VARCHAR, CAST(DATEADD(day, -25, GETDATE()) AS BIGINT)), DATEADD(day, 340, DATEADD(day, -25, GETDATE())), 1)
 ) AS user_data (
-    mobile, name, email, mpin_hash, wallet_balance, is_wallet_frozen, kyc_status, created_at, 
+    mobile, name, email, mpin_hash, wallet_balance, wallet_frozen, kyc_status, created_at, 
     role, step, risk_level, date_of_birth, nationality, address, profile_picture, 
     last_active, upi_id, permanent_token, permanent_token_expiry, version
 );
@@ -346,7 +346,7 @@ BEGIN
         END
         
         -- Insert transaction
-        INSERT INTO wallet_transactions (
+        INSERT INTO main_transactions (
             user_id,
             user_name,
             transaction_id,
@@ -424,7 +424,7 @@ SELECT 'USERS COUNT' as section, COUNT(*) as count FROM users
 UNION ALL
 SELECT 'KYC DOCUMENTS COUNT', COUNT(*) FROM kyc_documents
 UNION ALL
-SELECT 'TRANSACTIONS COUNT', COUNT(*) FROM wallet_transactions
+SELECT 'TRANSACTIONS COUNT', COUNT(*) FROM main_transactions
 UNION ALL
 SELECT 'PAYMENT REQUESTS COUNT', COUNT(*) FROM payment_requests;
 GO
@@ -437,7 +437,7 @@ SELECT TOP 5
     email,
     kyc_status,
     wallet_balance,
-    is_wallet_frozen as frozen,
+    wallet_frozen as frozen,
     risk_level,
     created_at,
     last_active,
@@ -461,7 +461,7 @@ SELECT TOP 10
     t.device_info,
     t.created_at,
     t.balance_after
-FROM wallet_transactions t
+FROM main_transactions t
 ORDER BY t.created_at DESC;
 GO
 
@@ -484,11 +484,11 @@ SELECT
 FROM users
 UNION ALL
 SELECT 
-    'Active Users: ' + CAST(SUM(CASE WHEN is_wallet_frozen = 0 THEN 1 ELSE 0 END) AS VARCHAR)
+    'Active Users: ' + CAST(SUM(CASE WHEN wallet_frozen = 0 THEN 1 ELSE 0 END) AS VARCHAR)
 FROM users
 UNION ALL
 SELECT 
-    'Frozen Wallets: ' + CAST(SUM(CASE WHEN is_wallet_frozen = 1 THEN 1 ELSE 0 END) AS VARCHAR)
+    'Frozen Wallets: ' + CAST(SUM(CASE WHEN wallet_frozen = 1 THEN 1 ELSE 0 END) AS VARCHAR)
 FROM users
 UNION ALL
 SELECT 
@@ -509,10 +509,10 @@ FROM users
 UNION ALL
 SELECT 
     'Total Transactions: ' + CAST(COUNT(*) AS VARCHAR)
-FROM wallet_transactions
+FROM main_transactions
 UNION ALL
 SELECT 
     'Total Volume: $' + FORMAT(SUM(amount), 'N2')
-FROM wallet_transactions
+FROM main_transactions
 WHERE status = 'COMPLETED';
 GO

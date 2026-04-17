@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { TokenManager } from '../pages/LoginPage';
 
-const API_BASE_URL = 'http://16.171.153.74:8080';
+const API_BASE_URL = '';
 // const API_BASE_URL = "http://localhost:8080"
 
 const api = axios.create({
@@ -10,7 +10,7 @@ const api = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
-    withCredentials: true, // Set to true if you need to send cookies
+    withCredentials: true,
 });
 
 // Request interceptor to add token
@@ -21,7 +21,6 @@ api.interceptors.request.use(
             config.headers.Authorization = `Bearer ${token}`;
         }
 
-        // Log requests in development
         if (import.meta.env.DEV) {
             console.log('API Request:', {
                 url: config.url,
@@ -45,8 +44,6 @@ api.interceptors.response.use(
     },
     (error) => {
         if (error.response) {
-            // The request was made and the server responded with a status code
-            // that falls out of the range of 2xx
             console.log('API Error Response:', {
                 data: error.response.data,
                 status: error.response.status,
@@ -56,13 +53,11 @@ api.interceptors.response.use(
             // Handle 401 Unauthorized
             if (error.response.status === 401) {
                 TokenManager.clearTokens();
-                window.location.href = '/login';
+                window.location.href = '/admin/login';  // ✅ CHANGE: /admin/login
             }
         } else if (error.request) {
-            // The request was made but no response was received
             console.log('API No Response:', error.request);
         } else {
-            // Something happened in setting up the request that triggered an Error
             console.log('API Request Error:', error.message);
         }
 

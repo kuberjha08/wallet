@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import "./App.css";
 import { LoginPage, TokenManager } from "./pages/LoginPage.jsx";
@@ -26,7 +21,7 @@ function App() {
 
   const handleLogout = () => {
     TokenManager.clearTokens();
-    window.location.href = "/login";
+    window.location.href = "/admin/login";  // ✅ CHANGE: /admin/login
   };
 
   const renderPage = () => {
@@ -60,27 +55,27 @@ function App() {
   return (
     <ThemeModeProvider>
       <ScopedCssBaseline />
-    <Router>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route element={<ProtectedRoute />}>
-          <Route
-            path="/*"
-            element={
-              <div className="app">
-                <Header
-                  setCurrentPage={setCurrentPage}
-                  onLogout={handleLogout}
-                />
-                <main className="main-content">{renderPage()}</main>
-                <Footer />
-              </div>
-            }
-          />
-        </Route>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
-    </Router>
+      <Router basename="/admin">   {/* ✅ CHANGE: basename="/admin" */}
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route element={<ProtectedRoute />}>
+            <Route
+              path="/*"
+              element={
+                <div className="app">
+                  <Header
+                    setCurrentPage={setCurrentPage}
+                    onLogout={handleLogout}
+                  />
+                  <main className="main-content">{renderPage()}</main>
+                  <Footer />
+                </div>
+              }
+            />
+          </Route>
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </Router>
     </ThemeModeProvider>
   );
 }
